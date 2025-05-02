@@ -25,6 +25,16 @@ void create(sql::Connection *connx, const std::string &table) {
 	pstmt -> executeUpdate();
 }
 // Read:
+void read(sql::Connection *connx, const std::string &table) {
+	sql::Statement *stmt = connx -> createStatement();
+	sql::ResultSet *resp = stmt -> executeQuery("SELECT * FROM " + table);
+
+	while (resp -> next()) {
+ 		std::cout << resp -> getInt("id") << std::endl;
+		std::cout << resp -> getString("name") << std::endl;
+		std::cout << resp -> getString("lastname") << std::endl;
+	}
+}
 // Update:
 // Delete
 
@@ -57,7 +67,8 @@ int main(int argc, char **argv) {
 		std::cerr << "[ERR] " << err.what() << std::endl;
 	}
 
-	create(connx, "person");
+	// create(connx, "person");
+	read(connx, "person");
 
 	return 0;
 }
