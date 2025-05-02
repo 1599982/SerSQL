@@ -44,6 +44,11 @@ void update(sql::Connection *connx, const std::string &table) {
 	pstmt -> executeUpdate();
 }
 // Delete
+void _delete(sql::Connection *connx, const std::string &table) {
+	sql::PreparedStatement *pstmt = connx -> prepareStatement("DELETE FROM " + table + " WHERE id = ?");
+	pstmt -> setInt(1, 3);
+	pstmt -> executeUpdate();
+}
 
 int main(int argc, char **argv) {
 	if (argc < 5) {
@@ -76,7 +81,8 @@ int main(int argc, char **argv) {
 
 	// create(connx, "person");
 	// read(connx, "person");
-	update(connx, "person");
+	// update(connx, "person");
+	_delete(connx, "person");
 
 	return 0;
 }
