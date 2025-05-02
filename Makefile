@@ -7,7 +7,6 @@ server:
 	g++ $(CXXFLAGS) $(SOURCES) \
 		-I$(MYSQL_PATH)/include/ \
 		-L$(MYSQL_PATH)/lib64/ \
-		-L$(MYSQL_PATH)/lib64/plugin/ \
 		-lmysqlcppconn \
 		-o $(PROGRAM)
 
