@@ -36,6 +36,13 @@ void read(sql::Connection *connx, const std::string &table) {
 	}
 }
 // Update:
+void update(sql::Connection *connx, const std::string &table) {
+	sql::PreparedStatement *pstmt = connx -> prepareStatement("UPDATE " + table + " SET name = ?, lastname = ? WHERE id = ?");
+	pstmt -> setString(1, "Turbo");
+	pstmt -> setString(2, "Niel");
+	pstmt -> setInt(3, 3);
+	pstmt -> executeUpdate();
+}
 // Delete
 
 int main(int argc, char **argv) {
@@ -68,7 +75,8 @@ int main(int argc, char **argv) {
 	}
 
 	// create(connx, "person");
-	read(connx, "person");
+	// read(connx, "person");
+	update(connx, "person");
 
 	return 0;
 }
