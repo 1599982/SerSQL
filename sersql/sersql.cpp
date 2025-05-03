@@ -22,13 +22,13 @@ SerSQL::SerSQL(
 	try {
 		sql::Driver *driver = sql::mysql::get_driver_instance();
 
-		std::cout << "[WRN] Establishing connection: " << hostname << std::endl;
+		std::cout << "[WRN] Connecting to database: " << hostname << std::endl;
 		this -> connection = driver -> connect(
 			hostname,
 			username,
 			check_password(password)
 		);
-		std::cout << "[LOG] Established connection: " << hostname << std::endl;
+		std::cout << "[LOG] Connected database: " << hostname << std::endl;
 
 		this -> connection -> setSchema(database);
 	} catch (sql::SQLException &err) {
