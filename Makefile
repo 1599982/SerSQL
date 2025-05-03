@@ -7,7 +7,7 @@ MYSQL_PATH = mysql-connector-c++-9.3.0-linux-glibc2.28-x86-64bit
 $(PROGRAM):
 	g++ $(CXXFLAGS) $(SOURCES) \
 		-I$(MYSQL_PATH)/include/ \
-		-I$(PROGRAM)/ \
+		-Isersql/ \
 		-L$(MYSQL_PATH)/lib64/ \
 		-lmysqlcppconn \
 		-o $(PROGRAM)
