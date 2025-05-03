@@ -3,6 +3,7 @@
 #include "mysql-connector-c++-9.3.0-linux-glibc2.28-x86-64bit/include/jdbc/cppconn/prepared_statement.h"
 #include "mysql-connector-c++-9.3.0-linux-glibc2.28-x86-64bit/include/jdbc/cppconn/resultset.h"
 #include "mysql-connector-c++-9.3.0-linux-glibc2.28-x86-64bit/include/jdbc/cppconn/statement.h"
+#include <httplib.h>
 #include <iostream>
 #include <string>
 
@@ -44,7 +45,7 @@ void _delete(sql::Connection *connx, const std::string &table) {
 
 int main(int argc, char **argv) {
 	if (argc < 5) {
-		std::cout << "server: ..." << std::endl;
+		std::cout << "SerSQL: ..." << std::endl;
 		std::cout << "    <hostname>    ..." << std::endl;
 		std::cout << "    <username>    ..." << std::endl;
 		std::cout << "    <password>    use $ for no password" << std::endl;
@@ -59,10 +60,18 @@ int main(int argc, char **argv) {
 
 	SerSQL *sersql = new SerSQL(hostname, username, password, database);
 
-	// create(sersql -> connx(), "person");
-	// read(connx, "person");
-	// update(connx, "person");
-	// _delete(connx, "person");
+	httplib::Server server;
+
+	server.Get("/person", [] (const httplib::Request &request, httplib::Response &response) {
+		response.set_content("Hello, API", "text/plain");
+	});
+
+	server.Post("/update", [] (const httplib::Request &request, httplib::Response &response) {
+		response.set_content("Received: " + request.body, "text/plain");
+	});
+
+	std::cout << "[LOG] Server listening on: 0.0.0.0:8080" << std::endl;
+	server.listen("0.0.0.0", 8080);
 
 	return 0;
 }
