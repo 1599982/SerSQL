@@ -3,9 +3,12 @@
 #include "mysql-connector-c++-9.3.0-linux-glibc2.28-x86-64bit/include/jdbc/cppconn/prepared_statement.h"
 #include "mysql-connector-c++-9.3.0-linux-glibc2.28-x86-64bit/include/jdbc/cppconn/resultset.h"
 #include "mysql-connector-c++-9.3.0-linux-glibc2.28-x86-64bit/include/jdbc/cppconn/statement.h"
+#include <nlohmann/json.hpp>
 #include <httplib.h>
 #include <iostream>
 #include <string>
+
+using json = nlohmann::json;
 
 /*
 * CRUD
@@ -68,6 +71,16 @@ int main(int argc, char **argv) {
 
 	server.Post("/update", [] (const httplib::Request &request, httplib::Response &response) {
 		response.set_content("Received: " + request.body, "text/plain");
+	});
+
+	server.Post("/insert", [] (const httplib::Request &request, httplib::Response &response) {
+		json entry = json::parse(request.body);
+
+		json result = {
+			{"message", entry["name"]}
+		};
+
+		response.set_content(result.dump(), "application/json");
 	});
 
 	std::cout << "[LOG] Server listening on: 0.0.0.0:8080" << std::endl;
