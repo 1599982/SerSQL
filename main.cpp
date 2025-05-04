@@ -14,14 +14,6 @@ using json = nlohmann::json;
 /*
 * CRUD
 */
-// Update:
-void update(sql::Connection *connx, const std::string &table) {
-	sql::PreparedStatement *pstmt = connx -> prepareStatement("UPDATE " + table + " SET name = ?, lastname = ? WHERE id = ?");
-	pstmt -> setString(1, "Turbo");
-	pstmt -> setString(2, "Niel");
-	pstmt -> setInt(3, 3);
-	pstmt -> executeUpdate();
-}
 // Delete
 void _delete(sql::Connection *connx, const std::string &table) {
 	sql::PreparedStatement *pstmt = connx -> prepareStatement("DELETE FROM " + table + " WHERE id = ?");
@@ -86,8 +78,23 @@ int main(int argc, char **argv) {
 		}
 	});
 
-	server.Post("/update", [] (const httplib::Request &request, httplib::Response &response) {
-		response.set_content("Received: " + request.body, "text/plain");
+	// Update
+	server.Put(R"(/update/(\d+))", [&sersql] (const httplib::Request &request, httplib::Response &response) {
+		try {
+			int id = std::stoi(request.matches[1]);
+
+			json entry = json::parse(request.body);
+			sql::PreparedStatement *pstmt = sersql -> connx() -> prepareStatement("UPDATE person SET name = ?, lastname = ? WHERE id = ?");
+			pstmt -> setString(1, entry["name"].get<std::string>());
+			pstmt -> setString(2, entry["lastname"].get<std::string>());
+			pstmt -> setInt(3, id);
+			pstmt -> executeUpdate();
+
+			response.set_content("{\"status\": \"updated\"}", "application/json");
+		} catch (std::exception &err) {
+			response.status = 500;
+			response.set_content("{\"status\": \"" + std::string(err.what()) + "\"}", "application/json");
+		}
 	});
 
 	server.Post("/insert", [] (const httplib::Request &request, httplib::Response &response) {
