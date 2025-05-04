@@ -14,17 +14,6 @@ using json = nlohmann::json;
 /*
 * CRUD
 */
-// Read:
-void read(sql::Connection *connx, const std::string &table) {
-	sql::Statement *stmt = connx -> createStatement();
-	sql::ResultSet *resp = stmt -> executeQuery("SELECT * FROM " + table);
-
-	while (resp -> next()) {
- 		std::cout << resp -> getInt("id") << std::endl;
-		std::cout << resp -> getString("name") << std::endl;
-		std::cout << resp -> getString("lastname") << std::endl;
-	}
-}
 // Update:
 void update(sql::Connection *connx, const std::string &table) {
 	sql::PreparedStatement *pstmt = connx -> prepareStatement("UPDATE " + table + " SET name = ?, lastname = ? WHERE id = ?");
@@ -76,8 +65,25 @@ int main(int argc, char **argv) {
 	});
 
 	// Read
-	server.Get("/person", [] (const httplib::Request &request, httplib::Response &response) {
-		response.set_content("Hello, API", "text/plain");
+	server.Get("/read", [&sersql] (const httplib::Request &request, httplib::Response &response) {
+		try {
+			json result = json::array();
+			sql::Statement *stmt = sersql -> connx() -> createStatement();
+			sql::ResultSet *resp = stmt -> executeQuery("SELECT * FROM person");
+
+			while (resp -> next()) {
+				result.push_back({
+					{"id", resp -> getInt("id")},
+					{"name", resp -> getString("name")},
+					{"lastname", resp -> getString("lastname")}
+				});
+			}
+
+			response.set_content(result.dump(), "application/json");
+		} catch (std::exception &err) {
+			response.status = 500;
+			response.set_content("{\"status\": \"" + std::string(err.what()) + "\"}", "application/json");
+		}
 	});
 
 	server.Post("/update", [] (const httplib::Request &request, httplib::Response &response) {
