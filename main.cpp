@@ -29,10 +29,9 @@ int main(int argc, char **argv) {
 
 	httplib::Server server;
 
-	server.Options(",*", [] (const httplib::Request &, httplib::Response &response) {
-		response.set_header("Access-Control-Allow-Origin", "*");
-		response.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-		response.set_header("Access-Control-Allow-Methods", "Content-Type");
+	server.Options(".*", [] (const httplib::Request &, httplib::Response &response) {
+		response.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+		response.set_header("Access-Control-Allow-Headers", "Content-Type");
 		response.status = 204;
 	});
 
@@ -52,7 +51,7 @@ int main(int argc, char **argv) {
 
 			response.set_content("{\"status\": \"created\"}", "application/json");
 		} catch (std::exception &err) {
-			response.status = 500;
+			response.status = 400;
 			response.set_content("{\"status\": \"" + std::string(err.what()) + "\"}", "application/json");
 		}
 	});
