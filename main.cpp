@@ -29,6 +29,18 @@ int main(int argc, char **argv) {
 
 	httplib::Server server;
 
+	server.Options(",*", [] (const httplib::Request &, httplib::Response &response) {
+		response.set_header("Access-Control-Allow-Origin", "*");
+		response.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+		response.set_header("Access-Control-Allow-Methods", "Content-Type");
+		response.status = 204;
+	});
+
+	server.set_pre_routing_handler([] (const httplib::Request &request, httplib::Response &response) {
+		response.set_header("Access-Control-Allow-Origin", "*");
+		return httplib::Server::HandlerResponse::Unhandled;
+	});
+
 	// Create
 	server.Post("/create", [&sersql] (const httplib::Request &request, httplib::Response &response) {
 		try {
