@@ -1,5 +1,4 @@
 #include "sersql/sersql.hpp"
-#include "mysql-connector-c++-9.3.0-linux-glibc2.28-x86-64bit/include/jdbc/cppconn/connection.h"
 #include "mysql-connector-c++-9.3.0-linux-glibc2.28-x86-64bit/include/jdbc/cppconn/prepared_statement.h"
 #include "mysql-connector-c++-9.3.0-linux-glibc2.28-x86-64bit/include/jdbc/cppconn/resultset.h"
 #include "mysql-connector-c++-9.3.0-linux-glibc2.28-x86-64bit/include/jdbc/cppconn/statement.h"
@@ -10,16 +9,6 @@
 #include <string>
 
 using json = nlohmann::json;
-
-/*
-* CRUD
-*/
-// Delete
-void _delete(sql::Connection *connx, const std::string &table) {
-	sql::PreparedStatement *pstmt = connx -> prepareStatement("DELETE FROM " + table + " WHERE id = ?");
-	pstmt -> setInt(1, 3);
-	pstmt -> executeUpdate();
-}
 
 int main(int argc, char **argv) {
 	if (argc < 5) {
@@ -97,14 +86,20 @@ int main(int argc, char **argv) {
 		}
 	});
 
-	server.Post("/insert", [] (const httplib::Request &request, httplib::Response &response) {
-		json entry = json::parse(request.body);
+	// Delete
+	server.Delete(R"(/delete/(\d+))", [&sersql] (const httplib::Request &request, httplib::Response &response) {
+		try {
+			int id = std::stoi(request.matches[1]);
 
-		json result = {
-			{"message", entry["name"]}
-		};
+			sql::PreparedStatement *pstmt = sersql -> connx() -> prepareStatement("DELETE FROM person WHERE id = ?");
+			pstmt -> setInt(1, id);
+			pstmt -> executeUpdate();
 
-		response.set_content(result.dump(), "application/json");
+			response.set_content("{\"status\": \"deleted\"}", "application/json");
+		} catch (std::exception &err) {
+			response.status = 500;
+			response.set_content("{\"status\": \"" + std::string(err.what()) + "\"}", "application/json");
+		}
 	});
 
 	std::cout << "[LOG] Server listening on: 0.0.0.0:8080" << std::endl;
