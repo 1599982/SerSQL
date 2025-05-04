@@ -3,6 +3,7 @@
 #include "mysql-connector-c++-9.3.0-linux-glibc2.28-x86-64bit/include/jdbc/cppconn/prepared_statement.h"
 #include "mysql-connector-c++-9.3.0-linux-glibc2.28-x86-64bit/include/jdbc/cppconn/resultset.h"
 #include "mysql-connector-c++-9.3.0-linux-glibc2.28-x86-64bit/include/jdbc/cppconn/statement.h"
+#include <exception>
 #include <nlohmann/json.hpp>
 #include <httplib.h>
 #include <iostream>
@@ -13,13 +14,6 @@ using json = nlohmann::json;
 /*
 * CRUD
 */
-// Create:
-void create(sql::Connection *connx, const std::string &table) {
-	sql::PreparedStatement *pstmt = connx -> prepareStatement("INSERT INTO " + table + " (name, lastname) VALUES (?, ?)");
-	pstmt -> setString(1, "Yorch");
-	pstmt -> setString(2, "Cachaestela");
-	pstmt -> executeUpdate();
-}
 // Read:
 void read(sql::Connection *connx, const std::string &table) {
 	sql::Statement *stmt = connx -> createStatement();
@@ -65,6 +59,23 @@ int main(int argc, char **argv) {
 
 	httplib::Server server;
 
+	// Create
+	server.Post("/create", [&sersql] (const httplib::Request &request, httplib::Response &response) {
+		try {
+			json entry = json::parse(request.body);
+			sql::PreparedStatement *stmt = sersql -> connx() -> prepareStatement("INSERT INTO person (name, lastname) VALUES (?, ?)");
+			stmt -> setString(1, entry["name"].get<std::string>());
+			stmt -> setString(2, entry["lastname"].get<std::string>());
+			stmt -> executeUpdate();
+
+			response.set_content("{\"status\": \"created\"}", "application/json");
+		} catch (std::exception &err) {
+			response.status = 500;
+			response.set_content("{\"status\": \"" + std::string(err.what()) + "\"}", "application/json");
+		}
+	});
+
+	// Read
 	server.Get("/person", [] (const httplib::Request &request, httplib::Response &response) {
 		response.set_content("Hello, API", "text/plain");
 	});
